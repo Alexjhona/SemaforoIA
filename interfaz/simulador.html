@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<style>
+  :root {
+    --bg: #f5f7fa; --panel: #ffffff; --panel2: #ffffff; --line: #e1e6ec; --text: #1d2733; --muted: #6b7a89;
+    --red: #e5484d; --amber: #e0a100; --green: #12b76a; --accent: #0e9f6e;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; color: var(--text); background: transparent; }
+  .wrap { display: grid; gap: 14px; }
+  .top { display: grid; grid-template-columns: 1fr 280px 1fr; gap: 14px; align-items: stretch; }
+  @media (max-width: 900px) {
+    .top { grid-template-columns: 1fr 1fr; }
+    .center { grid-column: 1 / -1; order: 3; display: grid; grid-template-columns: 1fr 1fr; align-items: center; }
+    .center svg.cross { max-width: 220px; justify-self: center; grid-row: span 3; }
+    .readout .timer { font-size: 2.4rem; }
+  }
+  @media (max-width: 560px) { .top { grid-template-columns: 1fr; } .center { grid-template-columns: 1fr; } }
+  .card { background: linear-gradient(180deg, var(--panel2), var(--panel)); border: 1px solid var(--line); border-radius: 16px; padding: 12px; }
+  .lane-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .lane-head h3 { margin: 0; font-size: 1.05rem; letter-spacing: .3px; }
+  .lane-head span { color: var(--muted); font-size: .8rem; }
+  .view { position: relative; border-radius: 12px; overflow: hidden; background: #eef2f6; aspect-ratio: 16/9; border: 1px solid #e1e6ec; }
+  .view img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .view .badge { position: absolute; left: 8px; top: 8px; background: rgba(255,255,255,.88); border: 1px solid #e1e6ec; padding: 3px 8px; border-radius: 99px; font-size: .75rem; color: var(--muted); }
+  .view .empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: .9rem; }
+  .lane-body { display: grid; grid-template-columns: 78px 1fr; gap: 12px; margin-top: 10px; align-items: center; }
+  .housing { background: #1f2a33; border: 2px solid #2e3b45; border-radius: 18px; padding: 8px; display: grid; gap: 8px; justify-items: center; box-shadow: inset 0 0 12px #000; }
+  .lamp { width: 46px; height: 46px; border-radius: 50%; background: #3a4752; border: 2px solid #46545f; transition: background .25s, box-shadow .25s; }
+  .lamp.red.on { background: radial-gradient(circle at 35% 35%, #ffc2c7, var(--red) 45%, #b3122a); box-shadow: 0 0 22px var(--red), 0 0 44px rgba(255,95,109,.45); }
+  .lamp.amber.on { background: radial-gradient(circle at 35% 35%, #fff1c4, var(--amber) 45%, #b98500); box-shadow: 0 0 22px var(--amber), 0 0 44px rgba(255,207,90,.45); }
+  .lamp.green.on { background: radial-gradient(circle at 35% 35%, #d2ffe8, var(--green) 45%, #0f9d5c); box-shadow: 0 0 22px var(--green), 0 0 44px rgba(76,240,160,.45); }
+  .lamp.amber.on.blink { animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: .35; } }
+  .readout .state { font-size: .8rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); }
+  .readout .timer { font-family: "Consolas", "SFMono-Regular", monospace; font-size: 3.1rem; font-weight: 700; line-height: 1; margin: 4px 0; }
+  .readout .timer small { font-size: 1.1rem; color: var(--muted); margin-left: 4px; }
+  .readout .meta { font-size: .85rem; color: var(--muted); }
+  .readout .meta b { color: var(--text); }
+  .c-red { color: var(--red); } .c-amber { color: var(--amber); } .c-green { color: var(--green); }
+  .center { display: flex; flex-direction: column; gap: 10px; }
+  .clock { text-align: center; }
+  .clock .t { font-family: "Consolas", monospace; font-size: 1.9rem; font-weight: 700; }
+  .clock .s { color: var(--muted); font-size: .8rem; }
+  .status { text-align: center; font-size: .82rem; padding: 4px 10px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); align-self: center; }
+  .status.run { color: #fff; background: var(--accent); border-color: var(--accent); font-weight: 600; }
+  .btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  button { font: inherit; font-size: .85rem; font-weight: 600; padding: 9px 4px; border-radius: 10px; border: 1px solid var(--line); background: #eef2f6; color: var(--text); cursor: pointer; transition: transform .08s, background .2s; }
+  button:hover:not(:disabled) { background: #e2e8ee; }
+  button:active:not(:disabled) { transform: scale(.97); }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  button.go { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.stop { background: #e5484d; color: #fff; border-color: #e5484d; }
+  .speed { display: flex; gap: 6px; justify-content: center; align-items: center; font-size: .8rem; color: var(--muted); }
+  .speed button { padding: 4px 9px; font-size: .78rem; }
+  .speed button.sel { background: #d7efe6; border-color: var(--accent); }
+  svg.cross { width: 100%; height: auto; display: block; }
+  .bar-wrap { display: grid; gap: 6px; }
+  .bar-row { display: grid; grid-template-columns: 70px 1fr; gap: 8px; align-items: center; font-size: .8rem; color: var(--muted); }
+  .bar { position: relative; display: flex; height: 18px; border-radius: 6px; overflow: hidden; background: #eef2f6; border: 1px solid #e1e6ec; }
+  .seg { height: 100%; display: grid; place-items: center; font-size: .68rem; color: #0b141e; font-weight: 700; overflow: hidden; white-space: nowrap; }
+  .seg.Verde { background: var(--green); } .seg.Amarillo { background: var(--amber); } .seg.Rojo { background: #f6c9cc; color: #a3202f; }
+  .cursor { position: absolute; top: -3px; bottom: -3px; width: 3px; background: #1d2733; border-radius: 2px; transition: left .1s linear; }
+  .decision { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .kpi { background: #f7f9fb; border: 1px solid #e1e6ec; border-radius: 12px; padding: 8px 10px; }
+  .kpi .k { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .kpi .v { font-size: 1.25rem; font-weight: 700; margin-top: 2px; }
+  .kpi .v small { font-size: .75rem; color: var(--muted); font-weight: 400; }
+  .log { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font-size: .74rem; padding: 4px 8px; border-radius: 8px; border: 1px solid #e1e6ec; color: var(--muted); background: #f7f9fb; }
+  .chip.cur { border-color: var(--accent); color: var(--text); background: #e7f7f0; box-shadow: 0 0 0 1px var(--accent) inset; }
+  .note { font-size: .78rem; color: var(--muted); }
+  .warn { color: var(--amber); }
+  h4 { margin: 0 0 8px; font-size: .9rem; color: var(--muted); font-weight: 600; letter-spacing: .4px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <!-- AVENIDA A -->
+    <div class="card" id="laneA">
+      <div class="lane-head"><h3 id="nameA">Avenida A</h3><span id="srcA"></span></div>
+      <div class="view"><img id="imgA" alt="Avenida A analizada"><div class="badge" id="badgeA"></div><div class="empty" id="emptyA">Sin imagen</div></div>
+      <div class="lane-body">
+        <div class="housing"><i class="lamp red" id="A-red"></i><i class="lamp amber" id="A-amber"></i><i class="lamp green" id="A-green"></i></div>
+        <div class="readout"><div class="state" id="A-state">—</div><div class="timer" id="A-timer">--<small>s</small></div><div class="meta" id="A-meta"></div></div>
+      </div>
+    </div>
+
+    <!-- CENTRO: cruce y controles -->
+    <div class="card center">
+      <div class="clock"><div class="t" id="clock">00:00</div><div class="s">tiempo de simulación</div></div>
+      <div class="status" id="status">Detenida</div>
+      <svg class="cross" viewBox="0 0 200 160" aria-label="Esquema del cruce">
+        <rect x="0" y="0" width="200" height="160" rx="12" fill="#e6ebf0"/>
+        <rect x="0" y="62" width="200" height="36" fill="#56616b"/>
+        <rect x="82" y="0" width="36" height="160" fill="#56616b"/>
+        <rect x="82" y="62" width="36" height="36" fill="#5f6b75"/>
+        <line x1="0" y1="80" x2="78" y2="80" stroke="#c9d3da" stroke-dasharray="6 6" stroke-width="1.5"/>
+        <line x1="122" y1="80" x2="200" y2="80" stroke="#c9d3da" stroke-dasharray="6 6" stroke-width="1.5"/>
+        <line x1="100" y1="0" x2="100" y2="58" stroke="#c9d3da" stroke-dasharray="6 6" stroke-width="1.5"/>
+        <line x1="100" y1="102" x2="100" y2="160" stroke="#c9d3da" stroke-dasharray="6 6" stroke-width="1.5"/>
+        <rect id="stopA" x="76" y="80" width="5" height="18" rx="1" fill="#ff5f6d"/>
+        <rect id="stopB" x="100" y="99" width="18" height="5" rx="1" fill="#ff5f6d"/>
+        <text x="8" y="56" fill="#33414f" font-size="11">Avenida A</text>
+        <text x="124" y="152" fill="#33414f" font-size="11">Avenida B</text>
+        <g id="carsA"></g><g id="carsB"></g>
+      </svg>
+      <div class="btns">
+        <button class="go" id="btnStart">Iniciar</button>
+        <button class="stop" id="btnStop" disabled>Detener</button>
+        <button id="btnReset">Reiniciar</button>
+      </div>
+      <div class="speed">Velocidad
+        <button data-speed="1" class="sel">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button>
+      </div>
+    </div>
+
+    <!-- AVENIDA B -->
+    <div class="card" id="laneB">
+      <div class="lane-head"><h3 id="nameB">Avenida B</h3><span id="srcB"></span></div>
+      <div class="view"><img id="imgB" alt="Avenida B analizada"><div class="badge" id="badgeB"></div><div class="empty" id="emptyB">Sin imagen</div></div>
+      <div class="lane-body">
+        <div class="housing"><i class="lamp red" id="B-red"></i><i class="lamp amber" id="B-amber"></i><i class="lamp green" id="B-green"></i></div>
+        <div class="readout"><div class="state" id="B-state">—</div><div class="timer" id="B-timer">--<small>s</small></div><div class="meta" id="B-meta"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h4>Decisión de la red</h4>
+    <div class="decision" id="decision"></div>
+  </div>
+
+  <div class="card bar-wrap">
+    <h4>Ciclo actual</h4>
+    <div class="bar-row"><span>Avenida A</span><div class="bar" id="barA"></div></div>
+    <div class="bar-row"><span>Avenida B</span><div class="bar" id="barB"></div></div>
+    <div class="note" id="cycleNote"></div>
+    <div id="logWrap" style="display:none"><h4 style="margin-top:8px">Decisiones por tramo de video</h4><div class="log" id="log"></div></div>
+  </div>
+</div>
+
+<script>
+// Datos generados por Python: fotogramas analizados por YOLO y decisiones de la MLP.
+const DATA = __DATA__;
+const ALL_RED = DATA.allRed;          // segundos de rojo total al arrancar (despeje)
+const $ = (id) => document.getElementById(id);
+
+// ---------- Estado de la simulación ----------
+let running = false, simT = 0, lastTs = null, speed = 1;
+let cycle = null;   // {start, decision, phases, duration}
+
+function decisionAt(t) {
+  // Elige la decisión de la ventana de video que corresponde al instante t.
+  const n = DATA.decisions.length;
+  if (n === 1 || !DATA.window) return 0;
+  const total = n * DATA.window;
+  return Math.min(n - 1, Math.floor((t % total) / DATA.window));
+}
+
+function newCycle(start) {
+  const idx = decisionAt(start);
+  const d = DATA.decisions[idx];
+  const duration = d.phases.reduce((s, p) => s + p.s, 0);
+  // Sin vehículos: todo rojo, se vuelve a evaluar en 1 s (videos) o se mantiene (foto).
+  return { start, idx, phases: duration ? d.phases : [{a: 'Rojo', b: 'Rojo', s: 1}], duration: duration || 1, empty: !duration };
+}
+
+function currentPhase() {
+  if (simT < ALL_RED) {
+    return { phase: {a: 'Rojo', b: 'Rojo', s: ALL_RED}, remaining: ALL_RED - simT, pos: -1, clearance: true };
+  }
+  if (!cycle) cycle = newCycle(ALL_RED);
+  while (simT >= cycle.start + cycle.duration) cycle = newCycle(cycle.start + cycle.duration);
+  let pos = simT - cycle.start;
+  for (let i = 0; i < cycle.phases.length; i++) {
+    const p = cycle.phases[i];
+    if (pos < p.s) return { phase: p, remaining: p.s - pos, index: i, pos: simT - cycle.start };
+    pos -= p.s;
+  }
+  return { phase: cycle.phases[0], remaining: 0, index: 0, pos: 0 };
+}
+
+function laneRemaining(lane, info) {
+  // Segundos hasta que cambie el color de esta avenida (suma de fases con el mismo color).
+  if (info.clearance) return info.remaining;
+  let rem = info.remaining;
+  const color = info.phase[lane];
+  for (let i = info.index + 1; i < cycle.phases.length; i++) {
+    if (cycle.phases[i][lane] !== color) break;
+    rem += cycle.phases[i].s;
+  }
+  return rem;
+}
+
+// ---------- Dibujo ----------
+const LABEL = { Verde: 'SIGA', Amarillo: 'PRECAUCIÓN', Rojo: 'ALTO' };
+const CLS = { Verde: 'c-green', Amarillo: 'c-amber', Rojo: 'c-red' };
+const STOPCOLOR = { Verde: '#4cf0a0', Amarillo: '#ffcf5a', Rojo: '#ff5f6d' };
+
+function paintLight(lane, color, rem) {
+  ['red', 'amber', 'green'].forEach((c) => $(`${lane}-${c}`).classList.remove('on'));
+  $(`${lane}-${{Rojo: 'red', Amarillo: 'amber', Verde: 'green'}[color]}`).classList.add('on');
+  $(`${lane}-state`).textContent = `${color} · ${LABEL[color]}`;
+  $(`${lane}-state`).className = `state ${CLS[color]}`;
+  const secs = cycle && cycle.empty && !running ? '--' : Math.max(0, Math.ceil(rem - 1e-6));
+  $(`${lane}-timer`).innerHTML = `${secs}<small>s</small>`;
+  $(`${lane}-timer`).className = `timer ${CLS[color]}`;
+  $(lane === 'A' ? 'stopA' : 'stopB').setAttribute('fill', STOPCOLOR[color]);
+}
+
+function frameAt(lane, t) {
+  const L = DATA.lanes[lane];
+  if (!L.frames.length) return null;
+  if (L.frames.length === 1 || !L.duration) return L.frames[0];
+  const vt = t % L.duration;
+  let best = L.frames[0];
+  for (const f of L.frames) { if (f.t <= vt) best = f; else break; }
+  return best;
+}
+
+let shown = { A: null, B: null };
+function paintView(lane, t) {
+  const f = frameAt(lane, t);
+  if (!f) { $(`empty${lane}`).style.display = 'grid'; return; }
+  $(`empty${lane}`).style.display = 'none';
+  if (shown[lane] !== f) { $(`img${lane}`).src = f.src; shown[lane] = f; }
+  const vt = DATA.lanes[lane].duration ? `t = ${f.t.toFixed(1)} s · ` : '';
+  $(`badge${lane}`).textContent = `${vt}${f.n} vehículos detectados`;
+}
+
+function renderBars(info) {
+  const phases = info.clearance ? [{a: 'Rojo', b: 'Rojo', s: ALL_RED}] : cycle.phases;
+  const total = phases.reduce((s, p) => s + p.s, 0);
+  const key = JSON.stringify(phases);
+  ['a', 'b'].forEach((lane) => {
+    const bar = $(lane === 'a' ? 'barA' : 'barB');
+    if (bar.dataset.key !== key) {
+      bar.dataset.key = key;
+      bar.innerHTML = phases.map((p) => `<div class="seg ${p[lane]}" style="width:${100 * p.s / total}%">${p.s >= 3 ? p.s + ' s' : ''}</div>`).join('') + '<div class="cursor"></div>';
+    }
+    const pos = info.clearance ? simT : info.pos;
+    bar.querySelector('.cursor').style.left = `calc(${Math.min(100, 100 * pos / total)}% - 1px)`;
+  });
+}
+
+function renderDecision(idx, info) {
+  const d = DATA.decisions[idx];
+  const sat = (s) => s ? ' <small class="warn">(saturado)</small>' : '';
+  const [ia, ib, ha, hb] = d.input;
+  $('decision').innerHTML = `
+    <div class="kpi"><div class="k">Detectados A (YOLO)</div><div class="v">${d.detA} <small>veh · ${d.heavyA} pesados</small></div></div>
+    <div class="kpi"><div class="k">Detectados B (YOLO)</div><div class="v">${d.detB} <small>veh · ${d.heavyB} pesados</small></div></div>
+    <div class="kpi"><div class="k">Entrada a la MLP</div><div class="v">A ${ia}${sat(d.satA)} · B ${ib}${sat(d.satB)}</div></div>
+    <div class="kpi"><div class="k">Verde A (MLP)</div><div class="v c-green">${d.greens[0]} s</div></div>
+    <div class="kpi"><div class="k">Verde B (MLP)</div><div class="v c-green">${d.greens[1]} s</div></div>
+    <div class="kpi"><div class="k">Ciclo completo</div><div class="v">${d.cycle} s <small>${d.label}</small></div></div>`;
+  $('A-meta').innerHTML = `Verde asignado: <b>${d.greens[0]} s</b> · ${d.detA} veh.`;
+  $('B-meta').innerHTML = `Verde asignado: <b>${d.greens[1]} s</b> · ${d.detB} veh.`;
+  document.querySelectorAll('.chip').forEach((c, i) => c.classList.toggle('cur', i === idx));
+}
+
+let lastIdx = -1;
+function render() {
+  const info = currentPhase();
+  paintLight('A', info.phase.a, laneRemaining('a', info));
+  paintLight('B', info.phase.b, laneRemaining('b', info));
+  paintView('A', simT); paintView('B', simT);
+  renderBars(info);
+  const idx = info.clearance ? decisionAt(ALL_RED) : cycle.idx;
+  if (idx !== lastIdx) { renderDecision(idx, info); lastIdx = idx; }
+  const m = Math.floor(simT / 60), s = Math.floor(simT % 60);
+  $('clock').textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  const d = DATA.decisions[idx];
+  $('cycleNote').innerHTML = info.clearance
+    ? `Ambas en rojo ${ALL_RED} s antes de empezar`
+    : (cycle.empty ? 'Sin vehículos: ambas en rojo'
+       : `A ${info.phase.a} · B ${info.phase.b} · cambia en ${Math.ceil(info.remaining - 1e-6)} s`);
+  $('status').textContent = running ? `En marcha · ${speed}×` : (simT > 0 ? 'Detenida' : 'Lista para iniciar');
+  $('status').className = running ? 'status run' : 'status';
+  $('btnStart').disabled = running;
+  $('btnStop').disabled = !running;
+}
+
+function loop(ts) {
+  if (running) {
+    if (lastTs !== null) simT += Math.min(0.5, (ts - lastTs) / 1000) * speed;
+    lastTs = ts;
+  }
+  render();
+  requestAnimationFrame(loop);
+}
+
+// ---------- Controles ----------
+$('btnStart').onclick = () => { running = true; lastTs = null; };
+$('btnStop').onclick = () => { running = false; lastTs = null; };
+$('btnReset').onclick = () => { running = false; lastTs = null; simT = 0; cycle = null; lastIdx = -1; };
+document.querySelectorAll('[data-speed]').forEach((b) => b.onclick = () => {
+  speed = Number(b.dataset.speed);
+  document.querySelectorAll('[data-speed]').forEach((x) => x.classList.toggle('sel', x === b));
+});
+
+// ---------- Inicio ----------
+$('nameA').textContent = DATA.lanes.A.name; $('nameB').textContent = DATA.lanes.B.name;
+$('srcA').textContent = DATA.lanes.A.source; $('srcB').textContent = DATA.lanes.B.source;
+if (DATA.decisions.length > 1) {
+  $('logWrap').style.display = 'block';
+  $('log').innerHTML = DATA.decisions.map((d) => `<span class="chip">${d.label}: A ${d.greens[0]} s · B ${d.greens[1]} s</span>`).join('');
+}
+if (DATA.autostart) running = true;
+
+// Ajusta la altura del marco al contenido (útil en pantallas angostas, versiones antiguas).
+try {
+  const fit = () => { if (window.frameElement) window.frameElement.style.height = document.documentElement.scrollHeight + 'px'; };
+  new ResizeObserver(fit).observe(document.body); fit();
+} catch (e) { /* sin acceso al marco: se usa la altura fija */ }
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

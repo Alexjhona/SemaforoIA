@@ -1,0 +1,7 @@
+pliegue,particion,imagenes,grupos,cajas_bicycle,cajas_bus,cajas_car,cajas_motorcycle,cajas_truck
+1,train,5251,9,16,517,74944,348,4100
+1,valid,781,1,17,36,16521,140,782
+2,train,4658,6,28,306,64064,424,3478
+2,valid,1374,4,5,247,27401,64,1404
+3,train,2155,5,22,283,43922,204,2186
+3,valid,3877,5,11,270,47543,284,2696

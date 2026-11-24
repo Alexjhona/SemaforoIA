@@ -1,0 +1,15 @@
+Material de prueba incluido en SemaforoIA (solo para demostración académica)
+
+Videos y fotos "avenida_A_*", "avenida_B_*" y "avenida_C_*":
+  Recortes (640 px, sin audio) del video "traffic.mp4" del repositorio ImageAI
+  (github.com/OlafenwaMoses/ImageAI, carpeta data-videos). Tráfico urbano de Delhi
+  con marca de agua de wildfilmsindia.com.
+
+Video "vista_cenital_pocos_autos.mp4":
+  Recorte de "car-detection.mp4" de Intel IoT DevKit Sample Videos
+  (github.com/intel-iot-devkit/sample-videos), licencia CC BY 4.0.
+
+Nota: el detector best.pt se entrenó con cámaras elevadas de una intersección
+(dataset Intersection-traffic-detection, Roboflow). Estas escenas son de otro
+lugar, por lo que el detector encuentra solo parte de los vehículos. Para la
+exposición conviene usar también imágenes del propio dataset (carpeta test).

@@ -1,0 +1,9 @@
+# Dependencias para ejecutar SemaforoIA (solo CPU, sin GPU)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+torchvision
+ultralytics==8.4.215
+opencv-python-headless
+streamlit>=1.61,<2
+Pillow>=10,<13
+pandas
