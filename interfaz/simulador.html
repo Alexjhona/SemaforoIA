@@ -82,7 +82,7 @@
     <!-- AVENIDA A -->
     <div class="card" id="laneA">
       <div class="lane-head"><h3 id="nameA">Avenida A</h3><span id="srcA"></span></div>
-      <div class="view"><img id="imgA" alt="Avenida A analizada"><div class="badge" id="badgeA"></div><div class="empty" id="emptyA">Sin imagen</div></div>
+      <div class="view"><img id="imgA" alt="Avenida A analizada" style="display:none"><div class="badge" id="badgeA"></div><div class="empty" id="emptyA">Sin imagen (conteo manual)</div></div>
       <div class="lane-body">
         <div class="housing"><i class="lamp red" id="A-red"></i><i class="lamp amber" id="A-amber"></i><i class="lamp green" id="A-green"></i></div>
         <div class="readout"><div class="state" id="A-state">—</div><div class="timer" id="A-timer">--<small>s</small></div><div class="meta" id="A-meta"></div></div>
@@ -121,7 +121,7 @@
     <!-- AVENIDA B -->
     <div class="card" id="laneB">
       <div class="lane-head"><h3 id="nameB">Avenida B</h3><span id="srcB"></span></div>
-      <div class="view"><img id="imgB" alt="Avenida B analizada"><div class="badge" id="badgeB"></div><div class="empty" id="emptyB">Sin imagen</div></div>
+      <div class="view"><img id="imgB" alt="Avenida B analizada" style="display:none"><div class="badge" id="badgeB"></div><div class="empty" id="emptyB">Sin imagen (conteo manual)</div></div>
       <div class="lane-body">
         <div class="housing"><i class="lamp red" id="B-red"></i><i class="lamp amber" id="B-amber"></i><i class="lamp green" id="B-green"></i></div>
         <div class="readout"><div class="state" id="B-state">—</div><div class="timer" id="B-timer">--<small>s</small></div><div class="meta" id="B-meta"></div></div>
@@ -225,8 +225,8 @@ function frameAt(lane, t) {
 let shown = { A: null, B: null };
 function paintView(lane, t) {
   const f = frameAt(lane, t);
-  if (!f) { $(`empty${lane}`).style.display = 'grid'; return; }
-  $(`empty${lane}`).style.display = 'none';
+  if (!f) { $(`empty${lane}`).style.display = 'grid'; $(`img${lane}`).style.display = 'none'; return; }
+  $(`empty${lane}`).style.display = 'none'; $(`img${lane}`).style.display = 'block';
   if (shown[lane] !== f) { $(`img${lane}`).src = f.src; shown[lane] = f; }
   const vt = DATA.lanes[lane].duration ? `t = ${f.t.toFixed(1)} s · ` : '';
   $(`badge${lane}`).textContent = `${vt}${f.n} vehículos detectados`;
