@@ -225,8 +225,8 @@ function frameAt(lane, t) {
 let shown = { A: null, B: null };
 function paintView(lane, t) {
   const f = frameAt(lane, t);
-  if (!f) { $(`empty${lane}`).style.display = 'grid'; $(`img${lane}`).style.display = 'none'; return; }
-  $(`empty${lane}`).style.display = 'none'; $(`img${lane}`).style.display = 'block';
+  if (!f) { $(`empty${lane}`).style.display = 'grid'; $(`img${lane}`).style.display = 'none'; $(`badge${lane}`).style.display = 'none'; return; }
+  $(`empty${lane}`).style.display = 'none'; $(`img${lane}`).style.display = 'block'; $(`badge${lane}`).style.display = 'block';
   if (shown[lane] !== f) { $(`img${lane}`).src = f.src; shown[lane] = f; }
   const vt = DATA.lanes[lane].duration ? `t = ${f.t.toFixed(1)} s · ` : '';
   $(`badge${lane}`).textContent = `${vt}${f.n} vehículos detectados`;
@@ -247,13 +247,16 @@ function renderBars(info) {
   });
 }
 
+// Rótulo honesto: los conteos vienen de YOLO solo si hay imágenes analizadas.
+const ORIGEN = (lane) => DATA.lanes[lane].frames.length ? `Detectados ${lane} (YOLO)` : `Vehículos ${lane} (manual)`;
+
 function renderDecision(idx, info) {
   const d = DATA.decisions[idx];
   const sat = (s) => s ? ' <small class="warn">(saturado)</small>' : '';
   const [ia, ib, ha, hb] = d.input;
   $('decision').innerHTML = `
-    <div class="kpi"><div class="k">Detectados A (YOLO)</div><div class="v">${d.detA} <small>veh · ${d.heavyA} pesados</small></div></div>
-    <div class="kpi"><div class="k">Detectados B (YOLO)</div><div class="v">${d.detB} <small>veh · ${d.heavyB} pesados</small></div></div>
+    <div class="kpi"><div class="k">${ORIGEN('A')}</div><div class="v">${d.detA} <small>veh · ${d.heavyA} pesados</small></div></div>
+    <div class="kpi"><div class="k">${ORIGEN('B')}</div><div class="v">${d.detB} <small>veh · ${d.heavyB} pesados</small></div></div>
     <div class="kpi"><div class="k">Entrada a la MLP</div><div class="v">A ${ia}${sat(d.satA)} · B ${ib}${sat(d.satB)}</div></div>
     <div class="kpi"><div class="k">Verde A (MLP)</div><div class="v c-green">${d.greens[0]} s</div></div>
     <div class="kpi"><div class="k">Verde B (MLP)</div><div class="v c-green">${d.greens[1]} s</div></div>
