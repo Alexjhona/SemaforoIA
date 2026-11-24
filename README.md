@@ -40,7 +40,7 @@ La barra lateral muestra el estado de los dos modelos y permite ajustar la confi
 
 Los verdes quedan entre 10 y 35 segundos en cada vía, con 3 segundos de amarillo y 2 segundos de rojo en ambas vías antes de cambiar el paso. Sin vehículos se mantiene el rojo en las dos vías. Se trata de una simulación académica. Los datos de aprendizaje del controlador proceden de un cruce idealizado y las imágenes representan demanda visible, sin medir velocidad ni flujo por unidad de tiempo.
 
-La guía para la sustentación está en `GUIA_EXPOSICION.md`.
+La guía para la sustentación está en `GUIA_EXPOSICION.md` y la de instalación y publicación en `GUIA_DESPLIEGUE.md`.
 
 ## Publicar gratis en Streamlit Community Cloud
 
